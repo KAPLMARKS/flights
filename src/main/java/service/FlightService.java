@@ -11,22 +11,43 @@ import java.util.stream.Collectors;
 
 public class FlightService {
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
-    public List<Flight> getFlights() {
+    private static FlightService instance;
+    private List<Flight> flights;
+
+    public static FlightService getInstance() {
+        if (instance == null) instance = new FlightService();
+        return instance;
+    }
+
+
+
+    public void loadFlights(String fileUrl) {
         Model jsonModel;
         try {
-            jsonModel = objectMapper.readValue(new FileInputStream("src/main/resources/flights.json"), Model.class);
+            jsonModel = objectMapper.readValue(new FileInputStream(fileUrl), Model.class);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
-        List<Flight> flights = jsonModel.getFlights();
-        return flights;
+        flights = jsonModel.getFlights();
     }
 
-    public List<Flight> getReqFlights(List<Flight> flights, String fromCity, String toCity){
-        List<Flight> reqFlights = flights.stream().filter(flight -> flight.getFromСity().equals(fromCity) &&
+    public List<Flight> getReqFlights(String fromCity, String toCity){
+        return flights.stream().filter(flight -> flight.getFromСity().equals(fromCity) &&
                 flight.getToCity().equals(toCity)).collect(Collectors.toList());
-        return reqFlights;
+
     }
+
+    public int getMinPrice(List<Flight> reqFlights) {
+        return reqFlights.stream().mapToInt(Flight::getPrice).min().getAsInt();
+    }
+
+    public double getAveragePrice(List<Flight> reqFlights) {
+        return reqFlights.stream().mapToInt(Flight::getPrice).average().getAsDouble();
+    }
+    public int getMaxPrice(List<Flight> reqFlights) {
+        return reqFlights.stream().mapToInt(Flight::getPrice).max().getAsInt();
+    }
+
 }
